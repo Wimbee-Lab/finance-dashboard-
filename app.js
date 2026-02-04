@@ -1,4 +1,11 @@
 // ============================================================================
+// FINANCE DASHBOARD - FORCED EMPTY DATA VERSION
+// ============================================================================
+
+// FORCE EMPTY INITIAL DATA
+const FORCE_EMPTY_DATA = true;
+
+// ============================================================================
 // CONSTANTS & UTILITIES
 // ============================================================================
 
@@ -621,26 +628,11 @@ const useFinanceStore = () => {
   const [billingPeriod, setBillingPeriodState] = useState(getDefaultBillingPeriod());
   const [lastDeletedItem, setLastDeletedItem] = useState(null);
 
-  const [categories, setCategories] = useState([
-    { id: 1, name: 'Jedzenie', type: 'fixed', icon: '🍽️', defaultBudget: 1750, monthlyBudgets: {0:1750,1:1750,2:1750,3:1750,4:1750,5:1750,6:1750,7:1750,8:1750,9:1750,10:1750,11:1750}, isArchived: false, order: 1 },
-    { id: 2, name: 'Paliwo', type: 'fixed', icon: '⛽', defaultBudget: 320, monthlyBudgets: {0:320,1:400,2:400,3:400,4:400,5:400,6:400,7:400,8:400,9:400,10:400,11:400}, isArchived: false, order: 2 },
-    { id: 3, name: 'Czynsz', type: 'fixed', icon: '🏠', defaultBudget: 170, monthlyBudgets: {0:170,1:170,2:170,3:170,4:170,5:170,6:170,7:170,8:170,9:170,10:170,11:170}, isArchived: false, order: 3 },
-    { id: 4, name: 'Kredyt', type: 'fixed', icon: '🏦', defaultBudget: 2600, monthlyBudgets: {0:2600,1:2600,2:2600,3:2600,4:2600,5:2600,6:2600,7:2600,8:2600,9:2600,10:2600,11:2600}, isArchived: false, order: 4 },
-  ]);
+  const [categories, setCategories] = useState([]);
 
-  const [transactions, setTransactions] = useState([
-    { id: 1, date: '2026-01-05', type: 'income', categoryId: null, categoryName: 'Wynagrodzenie', description: 'Pensja - Styczeń', amount: 7848, goalId: null },
-    { id: 2, date: '2026-01-01', type: 'expense', categoryId: 3, description: 'Czynsz AKDOM', amount: 170, goalId: null },
-    { id: 3, date: '2026-01-02', type: 'expense', categoryId: 4, description: 'Kredyt mieszkaniowy', amount: 2600, goalId: null },
-    { id: 4, date: '2026-01-06', type: 'expense', categoryId: 1, description: 'Zakupy Biedronka', amount: 450, goalId: null },
-    { id: 5, date: '2026-01-07', type: 'expense', categoryId: 2, description: 'Stacja BP', amount: 320, goalId: null },
-  ]);
+  const [transactions, setTransactions] = useState([]);
 
-  const [goals, setGoals] = useState([
-    { id: 1, name: 'Weterynarz', target: 1000, priority: 'A', status: 'active' },
-    { id: 2, name: 'Na czarną godzinę', target: 20000, priority: 'A', status: 'active' },
-    { id: 3, name: 'Wycieczka', target: 5000, priority: 'B', status: 'active' },
-  ]);
+  const [goals, setGoals] = useState([]);
 
   /**
    * ETAP 2: Ustawienie okresu rozliczeniowego z walidacją
