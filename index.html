@@ -3,127 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Finance Dashboard</title>
+  <title>Finance Dashboard - Cloud Sync</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config = { darkMode: 'class' }</script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <style>
     * { -webkit-tap-highlight-color: transparent; }
     body { margin: 0; padding: 0; overflow-x: hidden; }
     #root { min-height: 100vh; }
-    .loading { 
-      display: flex; align-items: center; justify-content: center;
-      min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white; font-family: -apple-system, sans-serif;
-    }
-    .spinner {
-      border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white;
-      border-radius: 50%; width: 50px; height: 50px;
-      animation: spin 1s linear infinite; margin: 0 auto 20px;
-    }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-  <div id="root"><div class="loading"><div style="text-align:center;"><div class="spinner"></div><h1 style="font-size:28px;font-weight:bold;">Finance Dashboard</h1><p>Loading...</p></div></div></div>
+  <div id="root">
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);">
+      <div style="text-align:center;color:white;">
+        <div style="border:4px solid rgba(255,255,255,0.3);border-top:4px solid white;border-radius:50%;width:50px;height:50px;animation:spin 1s linear infinite;margin:0 auto 20px;"></div>
+        <h1 style="font-size:28px;font-weight:bold;">Finance Dashboard</h1>
+        <p>Loading Cloud Sync...</p>
+      </div>
+    </div>
+  </div>
   
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
   
-  <script>localStorage.clear();sessionStorage.clear();</script>
-  
-  <script type="text/babel">
-const { useState, useEffect, createContext, useContext, useRef } = React;
-
-const Icon = ({ name, className }) => {
-  const icons = { wallet: '💰', trendingUp: '📈', trendingDown: '📉', calendar: '📅', plus: '➕', target: '🎯', settings: '⚙️', barChart: '📊', dollarSign: '💵', save: '💾', home: '🏠', edit: '✏️', trash: '🗑️', x: '❌', chevronRight: '▶️', alertCircle: '⚠️', clock: '🕐', arrowUp: '⬆️', arrowDown: '⬇️', zap: '⚡', activity: '📊', bell: '🔔', checkCircle: '✅', xCircle: '❌', undo: '↩️' };
-  const cn = className || '';
-  return React.createElement('span', { className: 'inline-block ' + cn, style: {fontSize: '1.2em'} }, icons[name] || '❓');
-};
-
-const Wallet = (p) => React.createElement(Icon, Object.assign({name: 'wallet'}, p));
-const TrendingUp = (p) => React.createElement(Icon, Object.assign({name: 'trendingUp'}, p));
-const TrendingDown = (p) => React.createElement(Icon, Object.assign({name: 'trendingDown'}, p));
-const Calendar = (p) => React.createElement(Icon, Object.assign({name: 'calendar'}, p));
-const Plus = (p) => React.createElement(Icon, Object.assign({name: 'plus'}, p));
-const Target = (p) => React.createElement(Icon, Object.assign({name: 'target'}, p));
-const Settings = (p) => React.createElement(Icon, Object.assign({name: 'settings'}, p));
-const BarChart3 = (p) => React.createElement(Icon, Object.assign({name: 'barChart'}, p));
-const DollarSign = (p) => React.createElement(Icon, Object.assign({name: 'dollarSign'}, p));
-const Save = (p) => React.createElement(Icon, Object.assign({name: 'save'}, p));
-const Home = (p) => React.createElement(Icon, Object.assign({name: 'home'}, p));
-const Edit2 = (p) => React.createElement(Icon, Object.assign({name: 'edit'}, p));
-const Trash2 = (p) => React.createElement(Icon, Object.assign({name: 'trash'}, p));
-const X = (p) => React.createElement(Icon, Object.assign({name: 'x'}, p));
-const ChevronRight = (p) => React.createElement(Icon, Object.assign({name: 'chevronRight'}, p));
-const AlertCircle = (p) => React.createElement(Icon, Object.assign({name: 'alertCircle'}, p));
-const Clock = (p) => React.createElement(Icon, Object.assign({name: 'clock'}, p));
-const ArrowUp = (p) => React.createElement(Icon, Object.assign({name: 'arrowUp'}, p));
-const ArrowDown = (p) => React.createElement(Icon, Object.assign({name: 'arrowDown'}, p));
-const Zap = (p) => React.createElement(Icon, Object.assign({name: 'zap'}, p));
-const Activity = (p) => React.createElement(Icon, Object.assign({name: 'activity'}, p));
-const Bell = (p) => React.createElement(Icon, Object.assign({name: 'bell'}, p));
-const CheckCircle = (p) => React.createElement(Icon, Object.assign({name: 'checkCircle'}, p));
-const XCircle = (p) => React.createElement(Icon, Object.assign({name: 'xCircle'}, p));
-const Undo2 = (p) => React.createElement(Icon, Object.assign({name: 'undo'}, p));
-
-const ResponsiveContainer = ({ width, height, children }) => React.createElement('div', { style: { width: width || '100%', height: height || 300, position: 'relative' } }, children);
-
-const BarChart = ({ data, children }) => {
-  const canvasRef = useRef(null);
-  const chartRef = useRef(null);
-  
-  useEffect(() => {
-    if (!canvasRef.current || !data || data.length === 0) return;
-    if (chartRef.current) chartRef.current.destroy();
-    
-    const ctx = canvasRef.current.getContext('2d');
-    const bars = React.Children.toArray(children).filter(c => c?.type === Bar);
-    
-    const datasets = bars.map(bar => {
-      const dk = bar.props.dataKey;
-      const cols = { expenses: { bg: 'rgba(239,68,68,0.8)', border: 'rgb(239,68,68)' }, income: { bg: 'rgba(16,185,129,0.8)', border: 'rgb(16,185,129)' }, budget: { bg: 'rgba(139,92,246,0.8)', border: 'rgb(139,92,246)' } };
-      const col = cols[dk] || { bg: 'rgba(100,116,139,0.8)', border: 'rgb(100,116,139)' };
-      return { label: dk.charAt(0).toUpperCase() + dk.slice(1), data: data.map(i => i[dk] || 0), backgroundColor: col.bg, borderColor: col.border, borderWidth: 2, borderRadius: 8, borderSkipped: false };
-    });
-    
-    chartRef.current = new Chart(ctx, {
-      type: 'bar',
-      data: { labels: data.map(i => i.month || 'Month'), datasets: datasets },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { color: 'rgb(148,163,184)', font: {size:12,weight:'600'}, padding:15, usePointStyle:true, pointStyle:'circle' } }, tooltip: { backgroundColor: 'rgba(0,0,0,0.9)', titleColor: 'white', bodyColor: 'white', borderColor: 'rgba(255,255,255,0.2)', borderWidth: 1, padding: 12, displayColors: true, callbacks: { label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString() + ' PLN' } } }, scales: { x: { grid: {display:false}, ticks: {color:'rgb(148,163,184)',font:{size:11,weight:'600'}} }, y: { beginAtZero:true, grid: {color:'rgba(148,163,184,0.1)'}, ticks: {color:'rgb(148,163,184)', callback: (v) => v>=1000 ? (v/1000).toFixed(1)+'k' : v} } }, interaction: {intersect:false,mode:'index'} }
-    });
-    
-    return () => { if (chartRef.current) chartRef.current.destroy(); };
-  }, [data, children]);
-  
-  if (!data || data.length === 0) return React.createElement('div', {className:'text-slate-400 text-center py-8'}, 'No data');
-  return React.createElement('canvas', {ref: canvasRef});
-};
-
-const Bar = () => null;
-const LineChart = () => React.createElement('div', {className:'text-slate-400 text-center py-8'}, 'Line chart');
-const Line = () => null;
-const XAxis = () => null;
-const YAxis = () => null;
-const CartesianGrid = () => null;
-const Tooltip = () => null;
-const Legend = () => null;
-
-window.lucide = { Wallet,TrendingUp,TrendingDown,Calendar,Plus,Target,Settings,BarChart3,DollarSign,Save,Home,Edit2,Trash2,X,ChevronRight,AlertCircle,Clock,ArrowUp,ArrowDown,Zap,Activity,Bell,CheckCircle,XCircle,Undo2, createIcons: () => {} };
-  </script>
-  
   <script type="text/babel" src="./app.js"></script>
   
   <script type="text/babel">
-try {
-  const root = ReactDOM.createRoot(document.getElementById('root'));
-  root.render(React.createElement(App));
-  console.log('✅ App loaded!');
-} catch (e) {
-  console.error('❌ Error:', e);
-  document.getElementById('root').innerHTML = '<div class="loading"><div style="text-align:center;padding:20px;"><h1 style="color:#ef4444;font-size:24px;">Error</h1><pre style="background:rgba(0,0,0,0.3);padding:15px;border-radius:10px;font-size:11px;color:white;margin-top:15px;">'+e.toString()+'</pre></div></div>';
-}
+    try {
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(React.createElement(window.App));
+      console.log('✅ Finance Dashboard with Cloud Sync loaded!');
+    } catch (error) {
+      console.error('❌ Error:', error);
+      document.getElementById('root').innerHTML = 
+        '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#1e293b;color:white;padding:20px;">' +
+        '<div style="text-align:center;max-width:600px;">' +
+        '<h1 style="color:#ef4444;font-size:24px;margin-bottom:15px;">Error Loading App</h1>' +
+        '<pre style="background:rgba(0,0,0,0.3);padding:15px;border-radius:10px;font-size:11px;overflow:auto;text-align:left;">' +
+        error.toString() + '</pre>' +
+        '<button onclick="location.reload()" style="margin-top:20px;padding:12px 30px;background:white;color:#667eea;border:none;border-radius:8px;font-weight:bold;cursor:pointer;">Refresh</button>' +
+        '</div></div>';
+    }
   </script>
 </body>
 </html>
