@@ -8,7 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config = { darkMode: 'class' }</script>
   
-  <!-- Chart.js - DZIAŁA ZAWSZE! -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   
   <style>
@@ -36,7 +36,7 @@
       <div style="text-align:center;">
         <div class="spinner"></div>
         <h1 style="font-size:28px;font-weight:bold;">Finance Dashboard</h1>
-        <p>Loading with Chart.js...</p>
+        <p>Loading...</p>
       </div>
     </div>
   </div>
@@ -67,7 +67,7 @@
         arrowDown: '⬇️', zap: '⚡', activity: '📊',
         bell: '🔔', checkCircle: '✅', xCircle: '❌', undo: '↩️'
       };
-      return <span className={\`inline-block \${className}\`} style={{fontSize: '1.2em'}}>{icons[name] || '❓'}</span>;
+      return <span className={'inline-block ' + className} style={{fontSize: '1.2em'}}>{icons[name] || '❓'}</span>;
     };
     
     const Wallet = (props) => <Icon name="wallet" {...props} />;
@@ -96,7 +96,7 @@
     const XCircle = (props) => <Icon name="xCircle" {...props} />;
     const Undo2 = (props) => <Icon name="undo" {...props} />;
     
-    // Chart.js Components - KOLOROWE WYKRESY!
+    // Chart.js Components
     const ResponsiveContainer = ({ width, height, children }) => (
       <div style={{ width: width || '100%', height: height || 300, position: 'relative' }}>
         {children}
@@ -110,14 +110,11 @@
       useEffect(() => {
         if (!canvasRef.current || !data || data.length === 0) return;
         
-        // Destroy old chart
         if (chartRef.current) {
           chartRef.current.destroy();
         }
         
         const ctx = canvasRef.current.getContext('2d');
-        
-        // Extract bars info
         const bars = React.Children.toArray(children).filter(child => child?.type === Bar);
         
         const datasets = bars.map(bar => {
@@ -214,7 +211,7 @@
     };
     
     const Bar = ({ dataKey, fill }) => null;
-    const LineChart = () => <div className="text-slate-400 text-center py-8">📈 Line chart</div>;
+    const LineChart = () => <div className="text-slate-400 text-center py-8">Line chart</div>;
     const Line = () => null;
     const XAxis = () => null;
     const YAxis = () => null;
@@ -237,7 +234,7 @@
     try {
       const root = ReactDOM.createRoot(document.getElementById('root'));
       root.render(<App />);
-      console.log('✅ Finance Dashboard with Chart.js loaded!');
+      console.log('✅ Finance Dashboard loaded!');
     } catch (error) {
       console.error('❌ Error:', error);
       document.getElementById('root').innerHTML = 
