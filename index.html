@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pl" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Finance Dashboard</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' }</script>
+  
+  <!-- Chart.js - DZIAŁA ZAWSZE! -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; padding: 0; overflow-x: hidden; }
+    #root { min-height: 100vh; }
+    input, select, textarea { font-size: 16px !important; }
+    
+    .loading { 
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white; font-family: -apple-system, sans-serif;
+    }
+    .spinner {
+      border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white;
+      border-radius: 50%; width: 50px; height: 50px;
+      animation: spin 1s linear infinite; margin: 0 auto 20px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div class="loading">
+      <div style="text-align:center;">
+        <div class="spinner"></div>
+        <h1 style="font-size:28px;font-weight:bold;">Finance Dashboard</h1>
+        <p>Loading with Chart.js...</p>
+      </div>
+    </div>
+  </div>
+  
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  
+  <script>
+    console.log('🧹 Clearing storage...');
+    localStorage.clear();
+    sessionStorage.clear();
+    console.log('✅ Storage cleared');
+  </script>
+  
+  <script type="text/babel">
+    const { useState, useEffect, createContext, useContext, useRef } = React;
+    
+    // Emoji Icons
+    const Icon = ({ name, className = "" }) => {
+      const icons = {
+        wallet: '💰', trendingUp: '📈', trendingDown: '📉',
+        calendar: '📅', plus: '➕', target: '🎯',
+        settings: '⚙️', barChart: '📊', dollarSign: '💵',
+        save: '💾', home: '🏠', edit: '✏️',
+        trash: '🗑️', x: '❌', chevronRight: '▶️',
+        alertCircle: '⚠️', clock: '🕐', arrowUp: '⬆️',
+        arrowDown: '⬇️', zap: '⚡', activity: '📊',
+        bell: '🔔', checkCircle: '✅', xCircle: '❌', undo: '↩️'
+      };
+      return <span className={\`inline-block \${className}\`} style={{fontSize: '1.2em'}}>{icons[name] || '❓'}</span>;
+    };
+    
+    const Wallet = (props) => <Icon name="wallet" {...props} />;
+    const TrendingUp = (props) => <Icon name="trendingUp" {...props} />;
+    const TrendingDown = (props) => <Icon name="trendingDown" {...props} />;
+    const Calendar = (props) => <Icon name="calendar" {...props} />;
+    const Plus = (props) => <Icon name="plus" {...props} />;
+    const Target = (props) => <Icon name="target" {...props} />;
+    const Settings = (props) => <Icon name="settings" {...props} />;
+    const BarChart3 = (props) => <Icon name="barChart" {...props} />;
+    const DollarSign = (props) => <Icon name="dollarSign" {...props} />;
+    const Save = (props) => <Icon name="save" {...props} />;
+    const Home = (props) => <Icon name="home" {...props} />;
+    const Edit2 = (props) => <Icon name="edit" {...props} />;
+    const Trash2 = (props) => <Icon name="trash" {...props} />;
+    const X = (props) => <Icon name="x" {...props} />;
+    const ChevronRight = (props) => <Icon name="chevronRight" {...props} />;
+    const AlertCircle = (props) => <Icon name="alertCircle" {...props} />;
+    const Clock = (props) => <Icon name="clock" {...props} />;
+    const ArrowUp = (props) => <Icon name="arrowUp" {...props} />;
+    const ArrowDown = (props) => <Icon name="arrowDown" {...props} />;
+    const Zap = (props) => <Icon name="zap" {...props} />;
+    const Activity = (props) => <Icon name="activity" {...props} />;
+    const Bell = (props) => <Icon name="bell" {...props} />;
+    const CheckCircle = (props) => <Icon name="checkCircle" {...props} />;
+    const XCircle = (props) => <Icon name="xCircle" {...props} />;
+    const Undo2 = (props) => <Icon name="undo" {...props} />;
+    
+    // Chart.js Components - KOLOROWE WYKRESY!
+    const ResponsiveContainer = ({ width, height, children }) => (
+      <div style={{ width: width || '100%', height: height || 300, position: 'relative' }}>
+        {children}
+      </div>
+    );
+    
+    const BarChart = ({ data, children }) => {
+      const canvasRef = useRef(null);
+      const chartRef = useRef(null);
+      
+      useEffect(() => {
+        if (!canvasRef.current || !data || data.length === 0) return;
+        
+        // Destroy old chart
+        if (chartRef.current) {
+          chartRef.current.destroy();
+        }
+        
+        const ctx = canvasRef.current.getContext('2d');
+        
+        // Extract bars info
+        const bars = React.Children.toArray(children).filter(child => child?.type === Bar);
+        
+        const datasets = bars.map(bar => {
+          const dataKey = bar.props.dataKey;
+          const colors = {
+            expenses: { bg: 'rgba(239, 68, 68, 0.8)', border: 'rgb(239, 68, 68)' },
+            income: { bg: 'rgba(16, 185, 129, 0.8)', border: 'rgb(16, 185, 129)' },
+            budget: { bg: 'rgba(139, 92, 246, 0.8)', border: 'rgb(139, 92, 246)' }
+          };
+          const color = colors[dataKey] || { bg: 'rgba(100, 116, 139, 0.8)', border: 'rgb(100, 116, 139)' };
+          
+          return {
+            label: dataKey.charAt(0).toUpperCase() + dataKey.slice(1),
+            data: data.map(item => item[dataKey] || 0),
+            backgroundColor: color.bg,
+            borderColor: color.border,
+            borderWidth: 2,
+            borderRadius: 8,
+            borderSkipped: false
+          };
+        });
+        
+        chartRef.current = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: data.map(item => item.month || 'Month'),
+            datasets: datasets
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                  color: 'rgb(148, 163, 184)',
+                  font: { size: 12, weight: '600' },
+                  padding: 15,
+                  usePointStyle: true,
+                  pointStyle: 'circle'
+                }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                titleColor: 'white',
+                bodyColor: 'white',
+                borderColor: 'rgba(255, 255, 255, 0.2)',
+                borderWidth: 1,
+                padding: 12,
+                displayColors: true,
+                callbacks: {
+                  label: function(context) {
+                    return context.dataset.label + ': ' + context.parsed.y.toLocaleString() + ' PLN';
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { color: 'rgb(148, 163, 184)', font: { size: 11, weight: '600' } }
+              },
+              y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                ticks: { 
+                  color: 'rgb(148, 163, 184)',
+                  callback: function(value) {
+                    return value >= 1000 ? (value/1000).toFixed(1) + 'k' : value;
+                  }
+                }
+              }
+            },
+            interaction: {
+              intersect: false,
+              mode: 'index'
+            }
+          }
+        });
+        
+        return () => {
+          if (chartRef.current) {
+            chartRef.current.destroy();
+          }
+        };
+      }, [data, children]);
+      
+      if (!data || data.length === 0) {
+        return <div className="text-slate-400 text-center py-8">No data available</div>;
+      }
+      
+      return <canvas ref={canvasRef} />;
+    };
+    
+    const Bar = ({ dataKey, fill }) => null;
+    const LineChart = () => <div className="text-slate-400 text-center py-8">📈 Line chart</div>;
+    const Line = () => null;
+    const XAxis = () => null;
+    const YAxis = () => null;
+    const CartesianGrid = () => null;
+    const Tooltip = () => null;
+    const Legend = () => null;
+    
+    window.lucide = {
+      Wallet, TrendingUp, TrendingDown, Calendar, Plus, Target,
+      Settings, BarChart3, DollarSign, Save, Home, Edit2, Trash2,
+      X, ChevronRight, AlertCircle, Clock, ArrowUp, ArrowDown,
+      Zap, Activity, Bell, CheckCircle, XCircle, Undo2,
+      createIcons: () => {}
+    };
+  </script>
+  
+  <script type="text/babel" src="./app.js"></script>
+  
+  <script type="text/babel">
+    try {
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+      console.log('✅ Finance Dashboard with Chart.js loaded!');
+    } catch (error) {
+      console.error('❌ Error:', error);
+      document.getElementById('root').innerHTML = 
+        '<div class="loading"><div style="text-align:center;padding:20px;max-width:600px;">' +
+        '<h1 style="color:#ef4444;font-size:24px;">Error</h1>' +
+        '<pre style="background:rgba(0,0,0,0.3);padding:15px;border-radius:10px;text-align:left;font-size:11px;overflow:auto;color:white;margin-top:15px;">' +
+        error.toString() + '</pre>' +
+        '<button onclick="location.reload()" style="margin-top:20px;padding:12px 30px;background:white;color:#667eea;border:none;border-radius:8px;font-weight:bold;cursor:pointer;">Refresh</button>' +
+        '</div></div>';
+    }
+  </script>
+</body>
+</html>
